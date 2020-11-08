@@ -1,0 +1,520 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>AWSハンズオンURL短縮サービス</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid=""
+                  id="handson-aws-url-shortner"
+                  title="AWSハンズオンURL短縮サービス"
+                  environment="web"
+                  feedback-link="https://github.com/MarkingCloud/handson-aws-url-shortner.git">
+    
+      <google-codelab-step label="はじめに" duration="1">
+        <h2 is-upgraded><strong>概要</strong></h2>
+<p>AWSを利用したURL短縮サービスを開発しながら、サーバレスアプリの開発方法を学びましょう！</p>
+<h2 class="checklist" is-upgraded><strong>What you&#39;ll learn</strong></h2>
+<ul class="checklist">
+<li>サーバレスとは何かを知る</li>
+<li>AWSサービスの使い方がわかる</li>
+<li>サービスを公開するまでの流れがわかる</li>
+</ul>
+<h2 is-upgraded><strong>URL短縮サービスとは？</strong></h2>
+<p class="image-container"><img style="width: 601.70px" src="img/e644660afeff28ce.png"></p>
+<p>こんな時に代わりになる短いURLを発行するサービスです。</p>
+<p class="image-container"><img style="width: 601.70px" src="img/89dfe7889185c58f.png"></p>
+<p><a href="http://s31104.s3-website-ap-northeast-1.amazonaws.com/" target="_blank"><paper-button class="colored" raised>サンプルアプリ</paper-button></a></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="サーバレスについて" duration="1">
+        <h2 is-upgraded><strong>サーバレスとは？</strong></h2>
+<p>クラウドベンダーの提供しているサービスを組み合わせることで、<strong>サーバーの存在を意識せず</strong>開発・サービス提供が可能になる、というような考え方。</p>
+<p class="image-container"><img style="width: 601.70px" src="img/cc3954f8b7ed147d.png"></p>
+<p>AWSではAWS LambdaというFaaS(Fanction As a Service)がサーバレス開発のコアを担っている。</p>
+<h2 is-upgraded><strong>Lambdaとは？</strong></h2>
+<p>書いた関数を実行してくれるFaaS(Fanction As a Service)というジャンルのサービス。</p>
+<p><strong>関数をデプロイ</strong>し、API経由で呼び出すなどして利用する。</p>
+<p class="image-container"><img style="width: 601.70px" src="img/e8ab7dd43de2f1a7.png"></p>
+<p class="image-container"><img style="width: 601.70px" src="img/78d35664766ab19d.png"></p>
+<p><a href="https://aws.amazon.com/jp/lambda/" target="_blank">https://aws.amazon.com/jp/lambda/</a></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="構成" duration="1">
+        <h2 is-upgraded><strong>アーキテクチャ概要図</strong></h2>
+<p class="image-container"><img style="width: 601.70px" src="img/584a0586c298b0dc.png"></p>
+<ul>
+<li>ClientがブラウザでS3にアクセスし、html, css, jsのWebアプリを表示</li>
+<li>WebアプリからAPI Gatewayを経由してLambdaを呼び出し</li>
+<li>Lambdaで短縮URLを生成</li>
+<li>Lambda から Ridiret Object をS3にデプロイ</li>
+</ul>
+<aside class="special"><h2 is-upgraded> Cloud9とは</h2>
+<ul>
+<li>AWSのサービスの一つ</li>
+<li>ブラウザでアクセス可能な、クラウドベースの統合開発環境(IDE)</li>
+<li>AWS CLI を標準で利用可能(EC2, IAMも自動生成)</li>
+<li>Lambda や API Gateway と連携して開発/デプロイが同画面から可能</li>
+</ul>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="事前準備" duration="5">
+        <h2 is-upgraded><strong>この章でやること</strong></h2>
+<ul>
+<li>AWSにログインする</li>
+<li>Cloud9を起動する</li>
+</ul>
+<h2 is-upgraded><strong>AWSにログインする</strong></h2>
+<p><a href="https://aws.amazon.com/jp/console/" target="_blank"><paper-button class="colored" raised>AWSコンソール</paper-button></a>にアクセスし、ログインする。</p>
+<p>リージョンは東京(ap-northeast-1)に設定する。</p>
+<p class="image-container"><img style="width: 601.70px" src="img/a3fff9f2d5bbd1aa.png"></p>
+<h2 is-upgraded><strong>Cloud9を起動する</strong></h2>
+<p><a href="https://ap-northeast-1.console.aws.amazon.com/cloud9/home?region=ap-northeast-1" target="_blank"><paper-button class="colored" raised>Cloud9コンソール</paper-button></a>にアクセスし、以下の操作を行う。</p>
+<p><strong>1.Create environment</strong> を選択</p>
+<p><strong>2.Step 1 - Name environment</strong></p>
+<ul>
+<li>Name : 任意の名前</li>
+<li>Description : 空欄 [default]</li>
+<li>Next step</li>
+</ul>
+<p><strong>3.Step 2 - Configure settings</strong></p>
+<ul>
+<li>Environment type : Create a new EC2 instance for environment (direct access) [defaule]</li>
+<li>Instance type : t2.micro (1 GiB RAM + 1 vCPU) [default]</li>
+<li>Platform : Amazon Linux [default]</li>
+<li>Next step</li>
+</ul>
+<p><strong>4.Step 3 - Review</strong></p>
+<ul>
+<li>Create environment</li>
+</ul>
+<p class="image-container"><img style="width: 601.70px" src="img/4ac5bfffb98aa5a3.png"></p>
+<p>正常にCloud9が作成されれば、以下のような画面が表示される。</p>
+<p class="image-container"><img style="width: 601.70px" src="img/80c5737465859a7c.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Web画面の作成" duration="10">
+        <h2 is-upgraded><strong>この章でやること</strong></h2>
+<ul>
+<li>Web画面の資材をCloud9にダウンロードする</li>
+<li>資材をCloud9からS3にアップロードする</li>
+<li>Webサービスとして資材を公開する</li>
+<li>ホスティングされたページを確認する</li>
+</ul>
+<h2 is-upgraded><strong>Web画面の資材をCloud9にダウンロードする</strong></h2>
+<p>ハンズオンで利用するWeb画面の資材をダウンロードする。</p>
+<p>以下のコマンドを実行。</p>
+<pre>svn export https://github.com/kou72/aws-url-shortener/trunk/public</pre>
+<p>ツリービューに public ディレクトリが追加される。</p>
+<p class="image-container"><img style="width: 458.00px" src="img/e5a807016cc18a3a.png"></p>
+<p>ディレクトリ構成は以下。</p>
+<pre><code>public
+├── image
+│   └── MC_icon_white.png
+├── index.html
+├── scripts
+│   └── main.js
+└── styles
+    └── main.css</code></pre>
+<h2 is-upgraded><strong>資材をCloud9からS3にアップロードする</strong></h2>
+<p>資材をアップロードするバケットを作成する。</p>
+<p>以下コマンドを実行。&lt;バケット名&gt;には<strong>世界で一意な名前</strong>を入れる。</p>
+<pre>aws s3 mb s3://&lt;バケット名&gt; </pre>
+<aside class="warning"><p><strong>注意: </strong>入力した名前が既に存在する場合、以下のようなエラーとなるので、名前変えて再度実行する。</p>
+<p class="image-container"><img style="width: 587.00px" src="img/4fdeaa6acdfa1ecd.png"></p>
+</aside>
+<p>次に先ほどダウンロードした資材をバケットにアップロードする。</p>
+<p>以下コマンドを実行。</p>
+<pre>aws s3 sync public s3://&lt;バケット名&gt;</pre>
+<h2 is-upgraded><strong>Webサービスとして資材を公開する</strong></h2>
+<p><a href="https://s3.console.aws.amazon.com/s3/home?region=ap-northeast-1" target="_blank"><paper-button class="colored" raised>S3コンソール</paper-button></a> にアクセスし、先ほど作成したバケットを選択する。</p>
+<p>以下の操作を行う。</p>
+<p><strong>1.プロパティ &gt; 静的ウェブサイトホスティング &gt;  編集する</strong></p>
+<ul>
+<li>静的ウェブサイトホスティング : 有効にする</li>
+<li>ホスティングタイプ : 静的ウェブサイトをホストする</li>
+<li>インデックスドキュメント : index.html</li>
+<li>エラードキュメント : error.html</li>
+<li>変更の保存</li>
+</ul>
+<p class="image-container"><img style="width: 601.70px" src="img/b1af456579c787ed.png"></p>
+<p><strong>2.アクセス許可 &gt; ブロックパブリックアクセス (バケット設定) &gt; 編集する</strong></p>
+<ul>
+<li>[ ] パブリックアクセスをすべてブロック</li>
+<li>[x] 新しいアクセスコントロールリスト (ACL) を～</li>
+<li>[x] 任意のアクセスコントロールリスト (ACL) を～</li>
+<li>[ ] 新しいパブリックバケットポリシーまたは～</li>
+<li>[ ] 任意のパブリックバケットポリシーまたは～</li>
+<li>変更の保存</li>
+<li>「確認」と入力</li>
+<li>確認</li>
+</ul>
+<p class="image-container"><img style="width: 601.70px" src="img/fa227d9ddb2f40e8.png"></p>
+<p><strong>3.アクセス許可 &gt; バケットポリシー &gt; 編集する</strong></p>
+<ul>
+<li>以下入力<strong>(※&lt;バケット名&gt;を自分のバケット名に書き換える)</strong></li>
+</ul>
+<pre>{
+   &#34;Version&#34;: &#34;2012-10-17&#34;,
+   &#34;Statement&#34;: [
+       {
+           &#34;Effect&#34;: &#34;Allow&#34;,
+           &#34;Principal&#34;: &#34;*&#34;,
+           &#34;Action&#34;: &#34;s3:Get*&#34;,
+           &#34;Resource&#34;: &#34;arn:aws:s3:::&lt;バケット名&gt;/*&#34;
+       }
+   ]
+}</pre>
+<ul>
+<li>変更を保存</li>
+</ul>
+<p class="image-container"><img style="width: 601.70px" src="img/ac650e3b79955610.png"></p>
+<h2 is-upgraded><strong>ホスティングされたページを確認する</strong></h2>
+<p><strong>プロパティ &gt; 静的ウェブサイトホスティング &gt; バケットウェブサイトエンドポイント</strong></p>
+<p>に出力されているURLをクリック。</p>
+<p>公開したWebページが表示されればOK。</p>
+<p class="image-container"><img style="width: 601.70px" src="img/9ceaf98768c0b819.png"></p>
+<p>まだ裏側は作成していないので、動作させても失敗する。</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Lambdaの作成" duration="5">
+        <h2 is-upgraded><strong>この章でやること</strong></h2>
+<ul>
+<li>Lambda と API Gateway を作成する</li>
+<li>Lambda に S3 へのアクセス権限を追加する</li>
+<li>Lambda のコードを作成する</li>
+</ul>
+<h2 is-upgraded><strong>Cloud9からリソース作成</strong></h2>
+<p>Cloud9の右側のメニューから <strong>Create a new Lambda function</strong> を選択</p>
+<p class="image-container"><img style="width: 601.70px" src="img/44d3e13e22b0e0ef.png"></p>
+<p>リソース作成ダイアログが表示されるので以下の通り選択する。</p>
+<p><strong>1.Function名</strong></p>
+<ul>
+<li>Function name : UrlShortener (任意の名前)</li>
+<li>Application name : UrlShortener (自動入力)</li>
+<li>Next</li>
+</ul>
+<p><strong>2.ランタイム</strong></p>
+<ul>
+<li>Select runtime : Python 3.6</li>
+<li>Select blueprint : empty-python</li>
+<li>Next</li>
+</ul>
+<p><strong>3.トリガー</strong></p>
+<ul>
+<li>Function trigger : API Gateway</li>
+<li>Resource Path : / (スラッシュのみ入力) </li>
+<li>Security : NONE</li>
+<li>Next</li>
+</ul>
+<p><strong>4.リソース・ロール</strong></p>
+<ul>
+<li>Memory : 128 MB [default]</li>
+<li>Role : Automatically generate role [default]</li>
+<li>Next</li>
+</ul>
+<p><strong>5.設定確認</strong></p>
+<ul>
+<li>Finish</li>
+</ul>
+<p class="image-container"><img style="width: 601.70px" src="img/ff3f898a879bb200.png"></p>
+<p>セットアップが完了するとリソースが作成され、表示される。</p>
+<p class="image-container"><img style="width: 601.70px" src="img/df54c6aa4bd5eeee.png"></p>
+<h2 is-upgraded><strong>Lambda に S3 へのアクセス権限を追加する</strong></h2>
+<p><a href="https://ap-northeast-1.console.aws.amazon.com/lambda" target="_blank"><paper-button class="colored" raised>Lambdaコンソール</paper-button></a>に移動し、先ほど作成した関数を選択。</p>
+<p>以下の操作を行う。</p>
+<p><strong>1.アクセス権限 &gt; 実行ロール</strong></p>
+<ul>
+<li>ロール名の出力URLをクリック</li>
+<li>IAM のコンソールへジャンプ</li>
+</ul>
+<p><strong>2.(IAMコンソール) アクセス権限 &gt; ポリシーをアタッチします</strong></p>
+<ul>
+<li>「s3AmazonS3FullAccess」で検索</li>
+<li>AmazonS3FullAccess のチェックボックスにチェック</li>
+<li>ポリシーのアタッチ</li>
+</ul>
+<p class="image-container"><img style="width: 601.70px" src="img/26dbc54a766a8cd1.png"></p>
+<h2 is-upgraded><strong>Lambda のコードを作成する</strong></h2>
+<p>Cloud9に戻り、lambda_function.py に以下のコードを張り付ける。</p>
+<pre><code>import boto3
+import random
+import string
+import json
+
+BUCKET_NAME = &#34;your-bucket-name&#34;
+
+def generate_random(n):
+    return &#34;&#34;.join(random.SystemRandom().choice(string.ascii_lowercase + string.digits) for _ in range(n))
+
+def get_public_url(bucket):
+    s3client = boto3.client(&#34;s3&#34;)
+    bucket_location = s3client.get_bucket_location(Bucket=bucket)
+    return &#34;http://{0}.s3-website-{1}.amazonaws.com/&#34;.format(
+        bucket,
+        bucket_location[&#34;LocationConstraint&#34;])
+
+def lambda_handler(event, context):
+    
+    s3resorce = boto3.resource(&#34;s3&#34;)
+    bucket = s3resorce.Bucket(BUCKET_NAME)
+    
+    short_id = generate_random(5)
+    short_key = &#34;u/&#34; + short_id
+    body = event.get(&#34;body&#34;)
+    
+    res = bucket.put_object(
+        Key=short_key,
+        Body=b&#34;&#34;,
+        WebsiteRedirectLocation=body,
+        ContentType=&#34;text/plain&#34;
+    )
+    
+    public_url = get_public_url(BUCKET_NAME)
+    shorten_url = (public_url + short_key)
+
+    return {
+        &#34;statusCode&#34;: 200,
+        &#34;headers&#34;: {
+            &#34;Access-Control-Allow-Origin&#34;: &#34;*&#34;
+        },
+        &#34;body&#34;: json.dumps(shorten_url)
+    };</code></pre>
+<p>次にL6の <strong>BUCKET_NAME </strong>を自分が作成したバケット名に書き換える。</p>
+<pre>BUCKET_NAME = &#34;your-bucket-name&#34;
+↓
+BUCKET_NAME = &#34;url-shortener-1112&#34; //例</pre>
+<p>Ctrl + s で忘れずに保存する。</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Lambda関数のテストを実施する" duration="10">
+        <h2 is-upgraded>この章でやること概要</h2>
+<ul>
+<li>Lambda関数をローカル実行する</li>
+<li>API Gateway経由でローカル実行する</li>
+<li>Lambdaをデプロイ</li>
+</ul>
+<h2 is-upgraded><strong>Lambda関数をローカル実行する</strong></h2>
+<p>画面右側の <strong>Local Functions &gt; 関数名を右クリック &gt; Run &gt; Run Local </strong>を選択する。</p>
+<p class="image-container"><img style="width: 601.70px" src="img/73fceb9539c79da6.png"></p>
+<p><strong>Payload</strong> タブに以下の内容を入力し、 <strong>Runボタン </strong>を選択するとLambdaがローカルで実行される。</p>
+<pre><code>{
+    &#34;body&#34;: &#34;https://markingcloud.connpass.com/event/193042/&#34;
+}</code></pre>
+<p>実行が完了すると、Lambdaのログが画面中央に表示される。</p>
+<p class="image-container"><img style="width: 601.70px" src="img/e384fc6e1ea103ee.png"></p>
+<p>Response の body に出力されているURLにアクセスし、リダイレクトされることを確認する。</p>
+<h2 is-upgraded><strong>API Gateway経由でローカル実行する</strong></h2>
+<p>画面右側の <strong>Local Functions &gt; 関数名を右クリック &gt; Run &gt; Run API Gateway Local </strong> を選択する。</p>
+<p>以下の操作を行う。</p>
+<ul>
+<li>Functions : UrlShortener [default]</li>
+<li>Path : / [default]</li>
+<li>Method : POST</li>
+<li>Query string : 空欄 [default]</li>
+<li>Body : https://markingcloud.connpass.com/event/193042/</li>
+<li>Run</li>
+</ul>
+<p class="image-container"><img style="width: 601.70px" src="img/7d4eb457ed541e05.png"></p>
+<p>Response に出力されているURLにアクセスし、リダイレクトされることを確認する。</p>
+<h2 is-upgraded><strong>Lambdaデプロイ</strong></h2>
+<p>ここまで確認出来たらLambdaをデプロイする。</p>
+<p>画面右側の <strong>Local Functions &gt; 関数名を選択 &gt; deployボタン</strong>を選択</p>
+<p>少し待つとデプロイが完了する。</p>
+<p class="image-container"><img style="width: 601.70px" src="img/5261ef3ca4f98349.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Webアプリと連携" duration="10">
+        <h2 is-upgraded><strong>この章でやること</strong></h2>
+<ul>
+<li>API Gateway のエンドポイントURLを取得する</li>
+<li>WebアプリにURLを埋め込む</li>
+<li>Webページにアクセスして動作確認する</li>
+</ul>
+<h2 is-upgraded><strong>API Gateway のエンドポイントURLを取得する</strong></h2>
+<p><a href="https://ap-northeast-1.console.aws.amazon.com/lambda" target="_blank"><paper-button class="colored" raised>Lambdaコンソール</paper-button></a>に移動し、作成した関数を選択。</p>
+<p><strong>設定 &gt; デザイナー &gt; API Gateway &gt; 詳細 </strong>を選択</p>
+<p><strong>API エンドポイント</strong>に出力されているURLをコピーする。</p>
+<p class="image-container"><img style="width: 601.70px" src="img/c029d02b3fe0e010.png"></p>
+<h2 is-upgraded><strong>WebアプリにURLを埋め込む</strong></h2>
+<p>Cloud9から public/script/main.js を開く。</p>
+<p>L20の <strong>apiurl </strong>をコピーしたAPIエンドポイントのURLに書き換える。</p>
+<pre>const apiurl = &#34;apigateway URL&#34;
+↓
+const apiurl = &#34;https://xxxxxxxxxx.execute-api.ap-northeast-1.amazonaws.com/Prod/&#34;</pre>
+<p>Ctrl + s で忘れずに保存する。</p>
+<p>再度、以下のコマンドでS3にデプロイする</p>
+<p>。</p>
+<pre>aws s3 sync public s3://&lt;バケット名&gt;</pre>
+<p>これでWebアプリの完成！</p>
+<h2 is-upgraded><strong>Webページにアクセスして動作確認する</strong></h2>
+<p><a href="https://s3.console.aws.amazon.com/s3/home?region=ap-northeast-1" target="_blank"><paper-button class="colored" raised>S3コンソール</paper-button></a> にアクセスし、作成したバケットを選択する。</p>
+<p><strong>プロパティ &gt; 静的ウェブサイトホスティング &gt; バケットウェブサイトエンドポイント</strong></p>
+<p>に出力されているURLをクリック。</p>
+<p>公開したWebページが表示されるので、適当なURLを入力して動作確認を行う。</p>
+<p class="image-container"><img style="width: 601.70px" src="img/7116f025c64c0dd.png"></p>
+<p>また、<strong>オブジェクト &gt; /u </strong>にリダイレクトオブジェクトが追加されていることも確認する。</p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="終わりに" duration="5">
+        <p>AWSを使ってURL短縮サービスを作成することができました！</p>
+<p>複雑そうな処理もAWSを使えば簡単に実装できることが実感できたかと思います。</p>
+<p>ここから先は各自思い思いに改良してみてください。</p>
+<h2 is-upgraded><strong>アンケート</strong></h2>
+<p>最後にアンケートがありますので、より良い勉強会作りのためにご協力お願い致します。</p>
+<p><a href="https://www.google.com/intl/ja_jp/forms/about/" target="_blank"><paper-button class="colored" raised>アンケート</paper-button></a></p>
+<aside class="special"><h2 is-upgraded>MarkingCloudをフォロー！</h2>
+<h3 is-upgraded><strong>Twitterやってます！</strong></h3>
+<p>MarkingCloudメンバーで<a href="https://twitter.com/MarkingCloud" target="_blank">Twitter</a>をやってます。</p>
+<p>クラウド関連の情報や、その他(キングダム、左利きのエレンなど)を不定期でつぶやきます。</p>
+<p>よろしければのぞいてみてください！(フォローもお願いします！)</p>
+<h3 is-upgraded><strong>(株)アイソルートのHPです！</strong></h3>
+<p>運営スタッフが所属する<a href="https://www.isoroot.jp/" target="_blank">(株)アイソルートのHP</a>です。</p>
+<p>一緒にお仕事できそうな方、転職を考えている方など、</p>
+<p>よろしければのぞいてみて下さい！</p>
+<h3 is-upgraded><strong>ブログやってます！</strong></h3>
+<p>運営スタッフの所属する<a href="https://www.isoroot.jp/blog/" target="_blank">(株)アイソルートの仲間たちが書いてるブログ</a>です。</p>
+<p>以下のような雑多なテーマでいろいろ書いています。</p>
+<p>よろしければのぞいてみてください！</p>
+<ul>
+<li>Amazon Web Services(3)</li>
+<li>DevOps(9)</li>
+<li>Google Cloud Platform(33)</li>
+<li>Microsoft Azure(4)</li>
+<li>Web開発(7)</li>
+<li>アジャイル(4)</li>
+<li>インフラ(9)</li>
+<li>スマートスピーカー(3)</li>
+<li>チャットボット(3)</li>
+<li>ネットワーク(7)</li>
+<li>モバイル開発(20)</li>
+<li>レポート(8)</li>
+<li>記事(5)</li>
+</ul>
+<h3 is-upgraded><strong>コミュトレ！</strong></h3>
+<p>運営スタッフの所属する(株)アイソルートが提供している<a href="https://commu-training.isoroot.jp/" target="_blank">「コミュトレ」</a>という教育サービスです！</p>
+<p>社会人のコミュニケーション能力のトレーニングを行うサービスです。</p>
+<p>面白いサービスですのでぜひ見てみて下さい！</p>
+</aside>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="おまけ1 : リソースの削除" duration="0">
+        <p>不要なリソースが残っているとお金がかかるので、要らなければ削除しましょう。</p>
+<h2 is-upgraded><strong>Cloud9</strong></h2>
+<p><a href="https://ap-northeast-1.console.aws.amazon.com/cloud9" target="_blank"><paper-button class="colored" raised>Cloud9 コンソール</paper-button></a>へ移動。</p>
+<ul>
+<li>対象のリソース(UrlShotener)にチェック</li>
+<li>Delete</li>
+<li>「Delete」と入力</li>
+<li>Delete</li>
+</ul>
+<aside class="special"><p><strong>Cloud9 </strong>は裏で EC2、EBS などが立ち上がっているが、</p>
+<p>コンソールから削除することで、全リソース連動して削除される。</p>
+</aside>
+<h2 is-upgraded><strong>S3</strong></h2>
+<p><a href="https://s3.console.aws.amazon.com/s3" target="_blank"><paper-button class="colored" raised>S3 コンソール</paper-button></a>へ移動</p>
+<ul>
+<li>対象のリソースにチェック</li>
+<li>空にする</li>
+<li>「完全に削除」</li>
+<li>空にする</li>
+<li>終了</li>
+<li>削除</li>
+<li>バケット名を入力</li>
+<li>バケットを削除</li>
+</ul>
+<h2 is-upgraded><strong>Lambda</strong></h2>
+<p><a href="http://ap-northeast-1.console.aws.amazon.com/lambda" target="_blank"><paper-button class="colored" raised>Lambda コンソール</paper-button></a>へ移動</p>
+<ul>
+<li>対象のリソース(cloud9-UrlShotenerで始まる)にチェック</li>
+<li>アクション &gt; 削除</li>
+<li>削除</li>
+</ul>
+<h2 is-upgraded><strong>API Gateway </strong></h2>
+<p><a href="https://ap-northeast-1.console.aws.amazon.com/apigateway" target="_blank"><paper-button class="colored" raised>API Gateway コンソール</paper-button></a>へ移動</p>
+<ul>
+<li>対象のリソース(cloud9-UrlShotener)にチェック</li>
+<li>Action &gt; Delete</li>
+<li>削除</li>
+</ul>
+<h2 is-upgraded><strong>IAM</strong></h2>
+<p><a href="https://console.aws.amazon.com/iam" target="_blank"><paper-button class="colored" raised>IAM コンソールへ</paper-button></a>移動</p>
+<ul>
+<li>アクセス管理 &gt; ロール</li>
+<li>対象のリソース(cloud9-UrlShotenerで始まる)にチェック</li>
+<li>ロールの削除</li>
+<li>はい、削除します</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="おまけ2 : 料金" duration="1">
+        <p>参考に各サービスの料金をまとめる。</p>
+<h2 is-upgraded><strong>Cloud9</strong></h2>
+<p>Cloud9 は裏で立ち上がるEC2、EBSに対してのみ料金が発生する。</p>
+<p class="image-container"><img style="width: 601.70px" src="img/d50bf9803dde198.png"></p>
+<p><a href="https://aws.amazon.com/jp/cloud9/pricing/" target="_blank">https://aws.amazon.com/jp/cloud9/pricing/</a></p>
+<h2 is-upgraded><strong>S3</strong></h2>
+<p>S3 はオブジェクトを置き続けると料金が発生するので注意。</p>
+<p class="image-container"><img style="width: 601.70px" src="img/5a8ede2588297b84.png"></p>
+<p><a href="https://aws.amazon.com/jp/s3/pricing/" target="_blank">https://aws.amazon.com/jp/s3/pricing/</a></p>
+<h2 is-upgraded><strong>Lambda</strong></h2>
+<p>Lambda はリクエスト数と実行時間ごとに料金が発生する。</p>
+<p class="image-container"><img style="width: 601.70px" src="img/5b412763dff49961.png"></p>
+<p><a href="https://aws.amazon.com/jp/lambda/pricing/" target="_blank">https://aws.amazon.com/jp/lambda/pricing/</a></p>
+<h2 is-upgraded><strong>API Gateway </strong></h2>
+<p>API Gateway はリクエスト数ごとに料金が発生する。</p>
+<p class="image-container"><img style="width: 601.70px" src="img/39a2c983346ca3cd.png"></p>
+<p><a href="https://aws.amazon.com/jp/api-gateway/pricing/" target="_blank">https://aws.amazon.com/jp/api-gateway/pricing/</a></p>
+<h2 is-upgraded><strong> Cost Explorer</strong></h2>
+<p>より詳細な利用料は<a href="https://console.aws.amazon.com/cost-management" target="_blank"><paper-button class="colored" raised>Cost Explorer</paper-button></a>から確認可能。</p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+  <script src="//support.google.com/inapp/api.js"></script>
+
+</body>
+</html>
