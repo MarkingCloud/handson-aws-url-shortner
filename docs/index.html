@@ -49,7 +49,7 @@
         <h2 is-upgraded><strong>サーバレスとは？</strong></h2>
 <p>クラウドベンダーの提供しているサービスを組み合わせることで、<strong>サーバーの存在を意識せず</strong>開発・サービス提供が可能になる、というような考え方。</p>
 <p class="image-container"><img style="width: 601.70px" src="img/cc3954f8b7ed147d.png"></p>
-<p>AWSではAWS LambdaというFaaS(Fanction As a Service)がサーバレス開発のコアを担っている。</p>
+<p>今回のハンズオンで登場する<strong>AWS Lambda</strong>もサーバレス開発のコアを担うサービスの一つ。</p>
 <h2 is-upgraded><strong>Lambdaとは？</strong></h2>
 <p>書いた関数を実行してくれるFaaS(Fanction As a Service)というジャンルのサービス。</p>
 <p><strong>関数をデプロイ</strong>し、API経由で呼び出すなどして利用する。</p>
@@ -102,9 +102,9 @@
 </ul>
 <p><strong>3.Step 2 - Configure settings</strong></p>
 <ul>
-<li>Environment type : Create a new EC2 instance for environment (direct access) [defaule]</li>
+<li>Environment type : Create a new EC2 instance for environment (direct access) [default]</li>
 <li>Instance type : t2.micro (1 GiB RAM + 1 vCPU) [default]</li>
-<li>Platform : Amazon Linux [default]</li>
+<li>Platform : Amazon Linux 2</li>
 <li>Next step</li>
 </ul>
 <p><strong>4.Step 3 - Review</strong></p>
@@ -257,7 +257,7 @@
 </ul>
 <p><strong>2.(IAMコンソール) アクセス権限 &gt; ポリシーをアタッチします</strong></p>
 <ul>
-<li>「s3AmazonS3FullAccess」で検索</li>
+<li>「AmazonS3FullAccess」で検索</li>
 <li>AmazonS3FullAccess のチェックボックスにチェック</li>
 <li>ポリシーのアタッチ</li>
 </ul>
