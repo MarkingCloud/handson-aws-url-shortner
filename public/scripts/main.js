@@ -25,7 +25,7 @@ UrlShortner.prototype.shortenUrl = async function (e) {
   }
   try {
     const response = await fetch(apiurl, param)
-    if (!response.ok) throw "ok propertyi is false"
+    if (!response.ok) throw "Failed to fetch the API."
     const body = await response.json()
     this.output.value = body
     this.output.focus()
