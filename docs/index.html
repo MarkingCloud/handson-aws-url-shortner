@@ -97,7 +97,7 @@
 <p><strong>1.Create environment</strong> を選択</p>
 <p><strong>2.Step 1 - Name environment</strong></p>
 <ul>
-<li>Name : url-shortener-1110 [任意の名前]</li>
+<li>Name : url-shortener [任意の名前]</li>
 <li>Description : 空欄 [default]</li>
 <li>Next step</li>
 </ul>
@@ -105,7 +105,7 @@
 <ul>
 <li>Environment type : Create a new EC2 instance for environment (direct access) [default]</li>
 <li>Instance type : t2.micro (1 GiB RAM + 1 vCPU) [default]</li>
-<li>Platform : Amazon Linux [default]</li>
+<li>Platform : Amazon Linux</li>
 <li>Next step</li>
 </ul>
 <p><strong>4.Step 3 - Review</strong></p>
@@ -331,7 +331,7 @@ BUCKET_NAME = &#34;url-shortener-1112&#34; //例</pre>
 <p class="image-container"><img style="width: 601.70px" src="img/73fceb9539c79da6.png"></p>
 <p><strong>Payload</strong> タブに以下の内容を入力し、 <strong>Runボタン </strong>を選択するとLambdaがローカルで実行される。</p>
 <pre><code>{
-    &#34;body&#34;: &#34;https://markingcloud.connpass.com/event/193042/&#34;
+    &#34;body&#34;: &#34;https://markingcloud.github.io/handson-aws-url-shortner/&#34;
 }</code></pre>
 <p>実行が完了すると、Lambdaのログが画面中央に表示される。</p>
 <p class="image-container"><img style="width: 601.70px" src="img/e384fc6e1ea103ee.png"></p>
@@ -344,7 +344,7 @@ BUCKET_NAME = &#34;url-shortener-1112&#34; //例</pre>
 <li>Path : / [default]</li>
 <li>Method : POST</li>
 <li>Query string : 空欄 [default]</li>
-<li>Body : https://markingcloud.connpass.com/event/193042/</li>
+<li>Body : https://markingcloud.github.io/handson-aws-url-shortner</li>
 <li>Run</li>
 </ul>
 <p class="image-container"><img style="width: 601.70px" src="img/7d4eb457ed541e05.png"></p>
